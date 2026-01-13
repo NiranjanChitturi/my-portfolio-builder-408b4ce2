@@ -2,18 +2,22 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "./ui/button";
+import { ThemeToggle } from "./ThemeToggle";
+import { Link, useLocation } from "react-router-dom";
 
 const navItems = [
-  { name: "Home", href: "#home" },
-  { name: "About", href: "#about" },
-  { name: "Skills", href: "#skills" },
-  { name: "Experience", href: "#experience" },
-  { name: "Contact", href: "#contact" },
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "Skills", href: "/skills" },
+  { name: "Experience", href: "/experience" },
+  { name: "Portfolio", href: "/portfolio" },
+  { name: "Contact", href: "/contact" },
 ];
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,13 +27,7 @@ export const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-    setIsMobileMenuOpen(false);
-  };
+  const isActive = (href: string) => location.pathname === href;
 
   return (
     <motion.header
@@ -45,66 +43,70 @@ export const Header = () => {
       <div className="container-custom">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <motion.a
-            href="#home"
-            onClick={(e) => {
-              e.preventDefault();
-              scrollToSection("#home");
-            }}
-            className="flex items-center gap-2"
+          <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl font-sans">N</span>
-            </div>
-            <span className="text-xl font-semibold text-foreground hidden sm:block">Niranjan</span>
-          </motion.a>
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                <span className="text-primary-foreground font-bold text-xl font-sans">N</span>
+              </div>
+              <span className="text-xl font-semibold text-foreground hidden sm:block">Niranjan</span>
+            </Link>
+          </motion.div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-6">
             {navItems.map((item, index) => (
-              <motion.a
+              <motion.div
                 key={item.name}
-                href={item.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  scrollToSection(item.href);
-                }}
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
-                className="text-muted-foreground hover:text-foreground transition-colors duration-300 text-sm font-medium"
-                whileHover={{ y: -2 }}
               >
-                {item.name}
-              </motion.a>
+                <Link
+                  to={item.href}
+                  className={`text-sm font-medium transition-colors duration-300 ${
+                    isActive(item.href)
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              </motion.div>
             ))}
           </nav>
 
-          {/* Hire Me Button */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-            className="hidden md:block"
-          >
-            <Button
-              variant="outline"
-              className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300"
-              onClick={() => scrollToSection("#contact")}
+          {/* Right side - Theme Toggle & CTA */}
+          <div className="hidden md:flex items-center gap-4">
+            <ThemeToggle />
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
             >
-              Hire Me
-            </Button>
-          </motion.div>
+              <Link to="/contact">
+                <Button
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+                >
+                  Hire Me
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
 
           {/* Mobile Menu Button */}
-          <button
-            className="md:hidden text-foreground p-2"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              className="text-foreground p-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -119,25 +121,27 @@ export const Header = () => {
           >
             <nav className="container-custom py-4 flex flex-col gap-4">
               {navItems.map((item) => (
-                <a
+                <Link
                   key={item.name}
-                  href={item.href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    scrollToSection(item.href);
-                  }}
-                  className="text-muted-foreground hover:text-foreground transition-colors py-2"
+                  to={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`py-2 transition-colors ${
+                    isActive(item.href)
+                      ? "text-primary"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
                 >
                   {item.name}
-                </a>
+                </Link>
               ))}
-              <Button
-                variant="outline"
-                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground w-full mt-2"
-                onClick={() => scrollToSection("#contact")}
-              >
-                Hire Me
-              </Button>
+              <Link to="/contact" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary hover:text-primary-foreground w-full mt-2"
+                >
+                  Hire Me
+                </Button>
+              </Link>
             </nav>
           </motion.div>
         )}
